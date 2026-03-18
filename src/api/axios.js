@@ -8,11 +8,13 @@ const api = axios.create({
     },
 });
 
-//  Interceptor tự động thêm token từ localStorage nếu có
+// Interceptor tự động thêm token từ localStorage nếu có
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token"); // token từ AuthContext
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== "undefined") {
+        const token = localStorage.getItem("token"); // token từ AuthContext
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
     }
     return config;
 });
