@@ -1,3 +1,6 @@
+import api from "./axios";
+import { IMAGE_URL } from "./config";
+
 // =====================
 //  ADMIN USER CRUD
 // =====================
