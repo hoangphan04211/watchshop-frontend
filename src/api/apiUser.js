@@ -1,13 +1,3 @@
-import api from "./axios"; // Dùng axios instance đã tạo sẵn
-import { IMAGE_URL } from "./config";
-
-//  Tự động thêm token nếu có
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    return config;
-});
-
 // =====================
 //  ADMIN USER CRUD
 // =====================
