@@ -1,72 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# WatchShop Frontend
 
-## Getting Started 
+A **Next.js (App Router)** frontend for an e-commerce watch store. This project includes a public-facing storefront and an admin dashboard for managing products, orders, users, and site settings.
 
-First, run the development server:
+---
+
+## ✅ Key Features
+
+- **Public Shop**: product listing, product detail, cart, checkout, user account, order history.
+- **Admin Panel**: manage products, categories, banners, orders, users, posts, settings, and store data.
+- **Next.js App Router** (React 19) with optimized routing and layouts.
+- **API integration** via Axios to a backend API (configurable via environment variables).
+- **Responsive UI** with Tailwind CSS, Framer Motion, and slick/swiper carousels.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Next.js 16** (App Router)
+- **React 19**
+- **Tailwind CSS v4** (via `@tailwindcss/postcss`)
+- **Axios** for API requests
+- **Framer Motion** for animations
+- **React Slick / Swiper** for carousels
+- **FontAwesome** icons
+
+---
+
+## 🚀 Getting Started
+
+### 1) Prerequisites
+
+- Node.js 18+ (recommended)
+- npm (bundled with Node.js)
+
+### 2) Install dependencies
+
+```bash
+npm install
+```
+
+### 3) Configure environment variables
+
+Create a `.env.local` file at the project root (this file is typically gitignored) and set the API base URLs:
+
+```env
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+NEXT_PUBLIC_IMAGE_URL=http://127.0.0.1:8000/images
+```
+
+> The defaults in `src/api/config.js` fall back to `http://127.0.0.1:8000`, but using env vars is recommended for staging/production.
+
+### 4) Run the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 5) Build / Start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn more 
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel 
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-
+```
 src/
   app/
-    (site)/
-      layout.js        // layout chính cho website
-      page.js          // trang chủ
-      products/
-        page.js        // danh sách sản phẩm
-        [id]/page.js   // chi tiết sản phẩm
+    (site)/            # Public-facing storefront routes
+      layout.js
+      page.js
+      about/page.js
+      products/         # Product listing + detail
       cart/
-        page.js        // giỏ hàng
       checkout/
-        page.js        // thanh toán
-      profile/
-        page.js        // tài khoản người dùng
-    (admin)/
-      admin/
-        layout.js      // layout riêng cho admin
-        page.js        // dashboard admin
-        products/
-          page.js      // quản lý sản phẩm
-        orders/
-          page.js      // quản lý đơn hàng
-        users/
-          page.js      // quản lý user
-  components/
-    ui/                // button, input, modal
-    layout/            // navbar, footer
-    product/           // card sản phẩm, filter
-  lib/
-    db.js              // cấu hình DB (Prisma/MySQL)
-    utils.js           // hàm tiện ích
-  styles/
-    globals.css
+      contact/
+      login/            # Auth routes
+      register/
+      profile/          # User profile + orders
+
+    (admin)/           # Admin dashboard routes
+      admin/            # Admin UI pages (products, orders, users, etc.)
+
+  api/                 # API clients (axios wrappers)
+  components/          # Shared UI components
+  context/             # React context providers (AuthContext)
+  ui/                  # Themes, toggles, layout helpers
+
+postcss.config.mjs     # Tailwind CSS setup
+package.json           # Scripts + dependencies
+```
+
+---
+
+## 🔌 API Configuration
+
+The frontend expects a REST API that provides endpoints for:
+
+- Products, categories, banners, sales
+- Orders, carts, checkout
+- Users, authentication
+- Posts, topics, contacts, settings
+
+The API base URL is configured in `src/api/config.js` and can be overridden with:
+
+- `NEXT_PUBLIC_API_URL` (API base URL)
+- `NEXT_PUBLIC_IMAGE_URL` (images CDN/base path)
+
+---
+
+## 📦 Deployment
+
+This project can be deployed anywhere that supports Node.js. Common choices:
+
+- **Vercel** (recommended for Next.js)
+- **Netlify**
+- **DigitalOcean App Platform / App Service**
+- Custom Docker container
+
+---
+
+## 🧩 Notes / Tips
+
+- The Admin side is under `src/app/(admin)/admin` and uses a separate layout (`layout.js`) so it can have its own sidebar/navigation.
+- The public site lives under `src/app/(site)` and includes product browsing, cart, checkout, and profile pages.
+- If you add new API endpoints, add/update the corresponding file under `src/api/`.
+
+---
+
+## 🙌 Contribution
+
+Feel free to open issues or pull requests. When contributing:
+
+1. Follow existing folder conventions (`app/(site)` vs `app/(admin)`).
+2. Keep API clients in `src/api/`.
+3. Keep UI components reusable and stateless when possible.
+
+---
+
+## 📄 License
+
+This repository does not include a license file. Add one (e.g., MIT) if you intend to open source it.
 
