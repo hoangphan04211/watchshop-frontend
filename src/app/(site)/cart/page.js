@@ -5,19 +5,18 @@ import { useCartApi } from "@/api/apiCart";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { IMAGE_URL } from "@/api/config";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faMinus, faTrashCan, faArrowRight, faShoppingBag } from "@fortawesome/free-solid-svg-icons";
 
 export default function CartPage() {
     const { getCart, updateCart, removeCartItem, clearCart } = useCartApi();
     const [cartDetails, setCartDetails] = useState([]);
     const [loading, setLoading] = useState(true);
 
-
     const formatCurrency = (num) =>
-        num.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+        num.toLocaleString("vi-VN") + "₫";
 
-    // Load giỏ hàng
     const fetchCart = async () => {
         try {
             const res = await getCart();
@@ -30,33 +29,31 @@ export default function CartPage() {
         }
     };
 
-    // Tăng giảm số lượng, load ngầm
-    const changeQty = async (id, delta) => {
-        setCartDetails(prev =>
-            prev.map(item => {
-                if (item.id === id) {
-                    const newQty = item.qty + delta;
-                    if (newQty < 1) return item;
-                    return { ...item, qty: newQty, updating: true };
-                }
-                return item;
-            })
-        );
+    useEffect(() => {
+        fetchCart();
+    }, []);
 
+    const changeQty = async (id, delta) => {
         const item = cartDetails.find(i => i.id === id);
         if (!item) return;
 
+        const newQty = item.qty + delta;
+        if (newQty < 1) return;
+
+        setCartDetails(prev =>
+            prev.map(i => i.id === id ? { ...i, qty: newQty, updating: true } : i)
+        );
+
         try {
-            await updateCart(id, item.qty + delta);
+            await updateCart(id, newQty);
         } catch {
             toast.error("Cập nhật thất bại");
-            // Rollback nếu thất bại
             setCartDetails(prev =>
-                prev.map(i => (i.id === id ? { ...i, qty: item.qty } : i))
+                prev.map(i => i.id === id ? { ...i, qty: item.qty } : i)
             );
         } finally {
             setCartDetails(prev =>
-                prev.map(i => (i.id === id ? { ...i, updating: false } : i))
+                prev.map(i => i.id === id ? { ...i, updating: false } : i)
             );
         }
     };
@@ -65,30 +62,38 @@ export default function CartPage() {
         setCartDetails(prev => prev.filter(item => item.id !== id));
         try {
             await removeCartItem(id);
-            toast.success("Xóa sản phẩm thành công");
+            toast.success("Đã gỡ khỏi giỏ hàng");
         } catch {
             toast.error("Xóa thất bại");
-            fetchCart(); // rollback
+            fetchCart();
         }
     };
 
-    const handleClear = async () => {
-        setCartDetails([]);
-        try {
-            await clearCart();
-            toast.success("Đã xóa toàn bộ giỏ hàng");
-        } catch {
-            toast.error("Xóa giỏ hàng thất bại");
-            fetchCart(); // rollback
-        }
-    };
+    if (loading) return (
+      <div className="container mx-auto px-4 py-32 flex flex-col items-center justify-center space-y-6">
+        <div className="w-10 h-10 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+        <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">Đang chuẩn bị giỏ hàng...</p>
+      </div>
+    );
 
-    useEffect(() => {
-        fetchCart();
-    }, []);
-
-    if (loading) return <div className="p-4">Đang tải giỏ hàng...</div>;
-    if (cartDetails.length === 0) return <div className="p-4">Giỏ hàng trống</div>;
+    if (cartDetails.length === 0) return (
+      <div className="container mx-auto px-4 py-32 flex flex-col items-center text-center space-y-10">
+        <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-900/10 flex items-center justify-center text-accent/30">
+           <FontAwesomeIcon icon={faShoppingBag} className="text-3xl" />
+        </div>
+        <div className="space-y-4">
+          <h2 className="font-serif text-3xl md:text-5xl text-foreground tracking-wide">Giỏ hàng của bạn đang trống</h2>
+          <p className="text-muted-foreground font-light max-w-sm mx-auto">Hãy bắt đầu hành trình tìm kiếm những tuyệt tác thời gian dành riêng cho bạn.</p>
+        </div>
+        <Link 
+          href="/products" 
+          className="inline-flex items-center gap-4 text-[11px] uppercase tracking-[0.4em] font-medium text-foreground hover:text-accent transition-colors"
+        >
+          <span>Khám phá ngay</span>
+          <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+        </Link>
+      </div>
+    );
 
     const total = cartDetails.reduce(
         (sum, item) => sum + (item.price_sale || item.price) * item.qty,
@@ -96,101 +101,140 @@ export default function CartPage() {
     );
 
     return (
-        <div className="container mx-auto px-4 max-w-5xl mt-10 mb-20">
-            <div className="flex justify-between items-end mb-8 border-b border-[var(--border)] pb-4">
-                <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
-                    Giỏ hàng của bạn
-                </h1>
-                <button
-                    onClick={handleClear}
-                    className="text-xs font-bold text-red-500 hover:text-red-700 tracking-widest uppercase"
-                >
-                    Xóa toàn bộ
-                </button>
+        <div className="container mx-auto px-4 py-16 md:py-24 max-w-6xl">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-6">
+                <div className="text-center md:text-left space-y-3">
+                    <span className="text-accent text-xs font-medium uppercase tracking-[0.4em]">Bộ sưu tập lựa chọn</span>
+                    <h1 className="font-serif text-4xl md:text-6xl text-foreground tracking-wide capitalize">
+                        Giỏ hàng <span className="text-accent font-serif italic text-2xl md:text-4xl">({cartDetails.length})</span>
+                    </h1>
+                </div>
             </div>
 
-            <div className="space-y-6">
-                {cartDetails.map((item) => (
-                    <div
-                        key={item.id}
-                        className="flex flex-col md:flex-row items-start md:items-center justify-between border border-[var(--border)] bg-white/90 dark:bg-zinc-950/40 p-5 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
-                    >
-                        <div className="flex items-start md:items-center gap-6 w-full md:w-auto">
-                            <div className="w-24 h-24 relative rounded-2xl overflow-hidden shrink-0 bg-zinc-50 dark:bg-zinc-900/40 border border-[var(--border)]">
-                                <Image
-                                    src={item.product.image ? `${IMAGE_URL}/products/${item.product.image}` : "/images/default.jpg"}
-                                    alt={item.product.name}
-                                    fill
-                                    className="object-cover"
-                                />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                <div className="lg:col-span-8 space-y-10">
+                    {cartDetails.map((item) => (
+                        <div
+                            key={item.id}
+                            className="group grid grid-cols-1 md:grid-cols-12 gap-8 items-center pb-10 border-b border-border/50"
+                        >
+                            <div className="md:col-span-3">
+                                <Link href={`/products/${item.product.slug}`} className="block relative aspect-square overflow-hidden bg-slate-50 dark:bg-slate-900/5 group">
+                                    <Image
+                                        src={item.product.image ? `${IMAGE_URL}/products/${item.product.image}` : "/images/placeholder.jpg"}
+                                        alt={item.product.name}
+                                        fill
+                                        className="object-contain p-4 grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                                    />
+                                </Link>
                             </div>
-                            <div className="flex-1">
-                                <h2 className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest text-sm line-clamp-2 leading-relaxed">
-                                    {item.product.name}
-                                </h2>
+                            
+                            <div className="md:col-span-6 space-y-4">
+                                <Link href={`/products/${item.product.slug}`} className="block group/title">
+                                    <h2 className="font-serif text-xl md:text-2xl text-foreground group-hover/title:text-accent transition-colors leading-tight">
+                                        {item.product.name}
+                                    </h2>
+                                </Link>
 
                                 {item.attributes && Object.keys(item.attributes).length > 0 && (
-                                    <div className="mt-2 text-zinc-500 text-[10px] font-bold uppercase tracking-widest flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap gap-4">
                                         {Object.entries(item.attributes).map(([key, value]) => (
-                                            <span key={key} className="bg-zinc-100 dark:bg-zinc-900/50 px-3 py-1 rounded-full border border-[var(--border)]">
-                                                {key}: {value}
+                                            <span key={key} className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                                                {key}: <span className="text-foreground">{value}</span>
                                             </span>
                                         ))}
                                     </div>
                                 )}
+                                
+                                <div className="text-sm text-foreground/70 font-light">
+                                    Đơn giá: {formatCurrency(item.price_sale || item.price)}
+                                </div>
+                            </div>
 
-                                <div className="mt-3 font-medium text-sm text-zinc-600 dark:text-zinc-300">
-                                    <span className="text-zinc-900 dark:text-zinc-100 font-bold">{formatCurrency(item.price_sale || item.price)}</span>
+                            <div className="md:col-span-3 flex flex-col items-end gap-6">
+                                <div className="flex items-center border border-border/50">
+                                    <button
+                                        onClick={() => changeQty(item.id, -1)}
+                                        className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-accent transition-colors disabled:opacity-30"
+                                        disabled={item.updating || item.qty <= 1}
+                                    >
+                                        <FontAwesomeIcon icon={faMinus} className="text-[9px]" />
+                                    </button>
+                                    <span className="w-8 text-center text-xs font-medium">{item.qty}</span>
+                                    <button
+                                        onClick={() => changeQty(item.id, 1)}
+                                        className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-accent transition-colors disabled:opacity-30"
+                                        disabled={item.updating}
+                                    >
+                                        <FontAwesomeIcon icon={faPlus} className="text-[9px]" />
+                                    </button>
+                                </div>
+                                <div className="text-right space-y-1">
+                                    <div className="font-serif text-xl text-accent">
+                                        {formatCurrency((item.price_sale || item.price) * item.qty)}
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemove(item.id)}
+                                        className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground hover:text-red-500 transition-colors"
+                                    >
+                                        <FontAwesomeIcon icon={faTrashCan} className="mr-2" />
+                                        Gỡ bỏ
+                                    </button>
                                 </div>
                             </div>
                         </div>
-
-                        <div className="flex items-center justify-between w-full md:w-auto mt-6 md:mt-0 gap-8">
-                            <div className="flex items-center bg-zinc-50 dark:bg-zinc-900/40 rounded-full border border-[var(--border)] p-1">
-                                <button
-                                    onClick={() => changeQty(item.id, -1)}
-                                    className="w-8 h-8 flex items-center justify-center text-zinc-500 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-zinc-900/60 rounded-full transition-colors"
-                                    disabled={item.updating}
-                                >-</button>
-                                <span className="w-10 text-center font-bold text-sm">{item.qty}</span>
-                                <button
-                                    onClick={() => changeQty(item.id, 1)}
-                                    className="w-8 h-8 flex items-center justify-center text-zinc-500 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-white dark:hover:bg-zinc-900/60 rounded-full transition-colors"
-                                    disabled={item.updating}
-                                >+</button>
-                            </div>
-                            
-                            <div className="text-right">
-                                <div className="font-black text-lg text-zinc-900 dark:text-zinc-100">
-                                    {formatCurrency((item.price_sale || item.price) * item.qty)}
-                                </div>
-                                <button
-                                    onClick={() => handleRemove(item.id)}
-                                    className="text-xs font-bold text-red-500 hover:text-red-700 tracking-widest uppercase mt-2"
-                                >
-                                    Xóa
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="mt-10 border-t border-[var(--border)] pt-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/90 dark:bg-zinc-950/40 p-8 rounded-3xl shadow-sm border border-[var(--border)]">
-                <div>
-                    <span className="text-sm font-bold text-zinc-500 uppercase tracking-widest">Tổng Thanh Toán:</span>
-                    <div className="text-3xl font-black text-zinc-900 dark:text-zinc-100 mt-1">
-                        {formatCurrency(total)}
+                    ))}
+                    
+                    <div className="pt-4">
+                         <Link 
+                            href="/products" 
+                            className="inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <FontAwesomeIcon icon={faArrowRight} className="text-[9px] rotate-180" />
+                            <span>Tiếp tục tìm kiếm tuyệt tác</span>
+                          </Link>
                     </div>
                 </div>
 
-                {/* ✅ Nút Thanh toán */}
-                <Link
-                    href="/checkout"
-                    className="bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 text-white px-10 py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all shadow-lg shadow-black/20 dark:shadow-none text-center w-full md:w-auto"
-                >
-                    Tiến hành thanh toán
-                </Link>
+                {/* Summary */}
+                <div className="lg:col-span-4 h-fit sticky top-28">
+                    <div className="p-8 md:p-10 border border-border bg-slate-50/50 dark:bg-slate-900/10 space-y-8">
+                        <h3 className="font-serif text-xl text-foreground border-b border-border pb-6">Đơn hàng của quý khách</h3>
+                        
+                        <div className="space-y-4">
+                            <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
+                                <span>Tạm tính</span>
+                                <span>{formatCurrency(total)}</span>
+                            </div>
+                            <div className="flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
+                                <span>Vận chuyển</span>
+                                <span className="text-accent italic">Đặc quyền miễn phí</span>
+                            </div>
+                            <div className="pt-4 border-t border-border flex justify-between items-baseline">
+                                <span className="font-medium text-sm">TỔNG CỘNG</span>
+                                <span className="font-serif text-3xl text-foreground">{formatCurrency(total)}</span>
+                            </div>
+                        </div>
+
+                        <Link
+                            href="/checkout"
+                            className="block w-full text-center bg-foreground text-background py-5 text-[10px] uppercase tracking-[0.4em] font-medium transition-all hover:bg-accent hover:text-white"
+                        >
+                            Tiến hành thanh toán
+                        </Link>
+                        
+                        <div className="pt-4 space-y-4">
+                           <div className="flex gap-4 items-start group">
+                              <div className="w-1 h-1 bg-accent/40 group-hover:bg-accent mt-1.5 transition-colors"></div>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-light">Thanh toán an toàn, bảo mật tuyệt đối</p>
+                           </div>
+                           <div className="flex gap-4 items-start group">
+                              <div className="w-1 h-1 bg-accent/40 group-hover:bg-accent mt-1.5 transition-colors"></div>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-light">Vận chuyển hỏa tốc toàn quốc</p>
+                           </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

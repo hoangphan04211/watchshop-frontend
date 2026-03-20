@@ -7,72 +7,111 @@
 :root {
   color-scheme: light;
 
+  /* Luxury Gold & Slate Palette - Light Mode */
   --background: #ffffff;
-  --foreground: #0a0a0a;
+  --foreground: #1e293b;
 
-  --muted: #71717a;
-  --muted-foreground: #3f3f46;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
 
   --card: #ffffff;
-  --card-foreground: #0a0a0a;
+  --card-foreground: #1e293b;
 
-  --border: rgba(24, 24, 27, 0.12);
-  --ring: rgba(24, 24, 27, 0.35);
+  --border: #e2e8f0;
+  --ring: #b8860b;
 
-  --primary: #0a0a0a;
+  --primary: #1e293b;
   --primary-foreground: #ffffff;
+
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+
+  --accent: #b8860b;
+  --accent-foreground: #ffffff;
+
+  --radius: 0.25rem;
+  /* Sharp, luxury feel */
+}
+
+html.dark {
+  color-scheme: dark;
+
+  /* Luxury Dark Palette */
+  --background: #0f172a;
+  --foreground: #f8fafc;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+
+  --border: #1e293b;
+  --ring: #c6a43f;
+
+  --primary: #f8fafc;
+  --primary-foreground: #0f172a;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+
+  --accent: #c6a43f;
+  --accent-foreground: #0f172a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-/* Auto dark theme if user has not chosen explicitly */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --background: #09090b;
-    --foreground: #fafafa;
-    --muted: #a1a1aa;
-    --muted-foreground: #d4d4d8;
-    --card: rgba(24, 24, 27, 0.72);
-    --card-foreground: #fafafa;
-    --border: rgba(244, 244, 245, 0.12);
-    --ring: rgba(244, 244, 245, 0.25);
-    --primary: #fafafa;
-    --primary-foreground: #09090b;
-  }
-}
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Inter", "Helvetica Neue", sans-serif;
 
-/* Manual dark theme via html.dark */
-html.dark {
-  color-scheme: dark;
-  --background: #09090b;
-  --foreground: #fafafa;
-  --muted: #a1a1aa;
-  --muted-foreground: #d4d4d8;
-  --card: rgba(24, 24, 27, 0.72);
-  --card-foreground: #fafafa;
-  --border: rgba(244, 244, 245, 0.12);
-  --ring: rgba(244, 244, 245, 0.25);
-  --primary: #fafafa;
-  --primary-foreground: #09090b;
+  --radius-xl: 1rem;
+  --radius-lg: 0.5rem;
+  --radius-md: 0.25rem;
+  --radius-sm: 0.125rem;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle theme transition (avoid during first paint in JS) */
-html[data-theme-animate="true"] * {
+/* Smooth system-wide transitions for theme switching */
+* {
   transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
   transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom Utilities for UX */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md border border-border;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .heading-1 {
+    @apply text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl;
+  }
 }
 
 :focus-visible {
@@ -80,3 +119,11 @@ html[data-theme-animate="true"] * {
   outline-offset: 2px;
 }
 
+/* Slick Carousel refinement */
+.slick-dots li button:before {
+  color: var(--muted-foreground) !important;
+}
+
+.slick-dots li.slick-active button:before {
+  color: var(--foreground) !important;
+}

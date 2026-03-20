@@ -1,7 +1,7 @@
 // src/api/config.js
 
 export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+  process.env.NEXT_PUBLIC_API_URL || "https://adminwatchshop.hoangphan.info.vn/api";
 
 export const IMAGE_URL =
-  process.env.NEXT_PUBLIC_IMAGE_URL || "http://127.0.0.1:8000/images";
+  process.env.NEXT_PUBLIC_IMAGE_URL || "https://adminwatchshop.hoangphan.info.vn/images";

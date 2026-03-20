@@ -9,7 +9,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
 import { ThemeProvider } from "@/_components/ui/ThemeProvider";
 
 // ✅ Component bảo vệ: chỉ cho phép vào admin nếu đã login + đúng role
@@ -57,13 +56,9 @@ function RequireAdminLogin({ children }) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+    <div>
       {children}
-    </motion.div>
+    </div>
   );
 }
 

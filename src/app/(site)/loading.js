@@ -2,23 +2,27 @@
 
 export default function Loading() {
   return (
-    <div className="container mx-auto px-4 md:px-8 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div className="h-8 w-60 rounded-xl bg-zinc-200/80 dark:bg-zinc-800/60 animate-pulse" />
-        <div className="h-10 w-10 rounded-full bg-zinc-200/80 dark:bg-zinc-800/60 animate-pulse" />
+    <div className="container mx-auto px-4 md:px-8 py-20">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
+        <div className="space-y-3 w-full md:w-1/2">
+          <div className="h-3 w-40 bg-slate-200/60 dark:bg-slate-800/40 animate-pulse uppercase tracking-[0.4em]" />
+          <div className="h-10 w-full bg-slate-200/80 dark:bg-slate-800/60 animate-pulse" />
+        </div>
+        <div className="h-10 w-40 bg-slate-200/80 dark:bg-slate-800/60 animate-pulse border border-border/30" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {Array.from({ length: 9 }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+        {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-3xl border border-[var(--border)] bg-white/60 dark:bg-zinc-950/30 overflow-hidden"
+            className="border border-border/30 bg-white/60 dark:bg-slate-900/10 overflow-hidden"
           >
-            <div className="aspect-[4/3] bg-zinc-200/70 dark:bg-zinc-800/50 animate-pulse" />
-            <div className="p-5 space-y-3">
-              <div className="h-4 w-3/4 rounded bg-zinc-200/80 dark:bg-zinc-800/60 animate-pulse" />
-              <div className="h-4 w-1/2 rounded bg-zinc-200/70 dark:bg-zinc-800/50 animate-pulse" />
-              <div className="h-10 w-full rounded-2xl bg-zinc-200/80 dark:bg-zinc-800/60 animate-pulse mt-4" />
+            <div className="aspect-[3/4] bg-slate-200/60 dark:bg-slate-800/40 animate-pulse" />
+            <div className="p-6 space-y-4">
+              <div className="h-2 w-1/4 bg-accent/20 animate-pulse" />
+              <div className="h-5 w-3/4 bg-slate-200/80 dark:bg-slate-800/60 animate-pulse" />
+              <div className="h-4 w-1/2 bg-slate-200/60 dark:bg-slate-800/40 animate-pulse" />
+              <div className="h-12 w-full bg-slate-950 dark:bg-slate-800 animate-pulse mt-6" />
             </div>
           </div>
         ))}

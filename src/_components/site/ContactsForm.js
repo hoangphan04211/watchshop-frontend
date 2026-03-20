@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { createContact } from "@/api/apiContact";
@@ -45,59 +45,91 @@ export default function ContactForm() {
     };
 
     return (
-        <div className="w-full max-w-[1200px] mx-auto mt-24 mb-10 px-4">
-            <div className="text-center mb-10">
-                 <h3 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">Liên Hệ Tư Vấn</h3>
-                 <p className="text-zinc-500 dark:text-zinc-400 mt-2 font-medium">Để lại thông tin, chuyên viên sẽ gọi lại cho bạn ngay</p>
-            </div>
-            <form
-                onSubmit={handleSubmit}
-                className="p-8 md:p-10 rounded-3xl bg-white/90 dark:bg-zinc-950/40 border border-[var(--border)] shadow-xl shadow-zinc-200/50 dark:shadow-none flex flex-col md:flex-row gap-6 md:gap-10 items-stretch"
-            >
-            {/* Left: Name, Email, Phone */}
-            <div className="flex-1 flex flex-col gap-3">
-                {["name", "email", "phone"].map((field) => (
-                    <div key={field} className="relative">
-                        <input
-                            type={field === "email" ? "email" : "text"}
-                            placeholder={field === "name" ? "Họ tên" : field === "email" ? "Email" : "Số điện thoại"}
-                            value={form[field] || ""}
-                            onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                            className={`w-full h-12 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-[var(--border)]
-                          text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all
-                          ${errors[field] ? "border-red-500" : ""}`}
-                        />
-                        {errors[field] && (
-                            <p className="absolute -bottom-5 left-0 text-red-500 text-xs">{errors[field]}</p>
-                        )}
+        <section className="container mx-auto px-4 mt-32 mb-32">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div className="space-y-8">
+                    <div className="space-y-3">
+                        <span className="text-accent text-xs font-medium uppercase tracking-[0.4em]">
+                           Phục vụ tận tâm
+                        </span>
+                        <h2 className="font-serif text-4xl md:text-6xl text-foreground leading-tight tracking-wide">
+                            Liên hệ <br /> <span className="text-accent italic">Tư vấn</span>
+                        </h2>
                     </div>
-                ))}
-            </div>
+                    <p className="text-muted-foreground font-light text-base md:text-lg max-w-md leading-relaxed">
+                        Đội ngũ chuyên gia của Hoang Watch luôn sẵn sàng đồng hành cùng quý khách trong việc lựa chọn những tuyệt tác thời gian phù hợp nhất.
+                    </p>
+                    <div className="pt-6 space-y-6">
+                        <div className="flex items-start gap-6 group">
+                            <span className="text-accent font-serif text-2xl opacity-40 group-hover:opacity-100 transition-opacity">01.</span>
+                            <div className="space-y-1">
+                                <h4 className="text-[11px] font-medium uppercase tracking-[0.2em]">Tư vấn chuyên sâu</h4>
+                                <p className="text-xs text-muted-foreground font-light">Am hiểu tường tận về các dòng máy Thụy Sĩ.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-6 group">
+                            <span className="text-accent font-serif text-2xl opacity-40 group-hover:opacity-100 transition-opacity">02.</span>
+                            <div className="space-y-1">
+                                <h4 className="text-[11px] font-medium uppercase tracking-[0.2em]">Thẩm định thật giả</h4>
+                                <p className="text-xs text-muted-foreground font-light">Quy trình kiểm tra nghiêm ngặt, chuyên nghiệp.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            {/* Right: Content */}
-            <div className="flex-[1.5] relative">
-                <textarea
-                    placeholder="Nội dung liên hệ"
-                    value={form.content || ""}
-                    onChange={(e) => setForm({ ...form, content: e.target.value })}
-                    className={`w-full h-full min-h-[110px] p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-[var(--border)]
-                      text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all`}
-                />
-                {errors.content && (
-                    <p className="absolute -bottom-5 left-0 text-red-500 text-xs">{errors.content}</p>
-                )}
-            </div>
+                <form
+                    onSubmit={handleSubmit}
+                    className="p-8 md:p-12 bg-white dark:bg-slate-900/40 border border-border shadow-2xl space-y-8"
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Họ và tên</label>
+                            <input
+                                type="text"
+                                value={form.name}
+                                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                className={`w-full bg-transparent border-b border-border py-3 text-foreground placeholder-slate-400 focus:outline-none focus:border-accent transition-colors ${errors.name ? "border-red-500" : ""}`}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Số điện thoại</label>
+                            <input
+                                type="text"
+                                value={form.phone}
+                                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                className={`w-full bg-transparent border-b border-border py-3 text-foreground placeholder-slate-400 focus:outline-none focus:border-accent transition-colors ${errors.phone ? "border-red-500" : ""}`}
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <label className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Email</label>
+                        <input
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            className={`w-full bg-transparent border-b border-border py-3 text-foreground placeholder-slate-400 focus:outline-none focus:border-accent transition-colors ${errors.email ? "border-red-500" : ""}`}
+                        />
+                    </div>
 
-            {/* Submit button */}
-            <button
-                type="submit"
-                disabled={loading}
-                className={`py-3 px-8 rounded-xl text-white font-bold tracking-widest uppercase text-sm transition-all duration-300
-                    ${loading ? "bg-zinc-400" : "bg-zinc-900 hover:bg-black hover:shadow-lg hover:shadow-black/20 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"}`}
-            >
-                {loading ? "Đang gửi..." : "Gửi Liên Hệ"}
-            </button>
-            </form>
-        </div>
-    );
+                    <div className="space-y-2">
+                        <label className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Yêu cầu tư vấn</label>
+                        <textarea
+                            value={form.content}
+                            onChange={(e) => setForm({ ...form, content: e.target.value })}
+                            className={`w-full h-24 bg-transparent border-b border-border py-3 text-foreground placeholder-slate-400 focus:outline-none focus:border-accent transition-colors resize-none ${errors.content ? "border-red-500" : ""}`}
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-5 bg-foreground text-background text-[10px] font-medium uppercase tracking-[0.4em] transition-all hover:bg-accent hover:text-white disabled:opacity-50"
+                    >
+                        {loading ? "Đang xử lý..." : "Gửi yêu cầu"}
+                    </button>
+                </form>
+            </div>
+    </section>
+  );
 }

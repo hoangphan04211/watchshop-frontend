@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { addUser, checkUserExists } from "@/api/apiUser";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -30,7 +31,6 @@ export default function RegisterPage() {
     const [visible, setVisible] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // ✅ Đóng form khi click ra ngoài (chỉ ẩn, không reload)
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (formRef.current && !formRef.current.contains(e.target)) {
@@ -42,36 +42,15 @@ export default function RegisterPage() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [router]);
 
-    // ✅ Validate từng trường
     const validate = (name, value) => {
         let error = "";
         switch (name) {
-            // case "name":
-            //     if (value.trim().length < 3) error = "Tên phải có ít nhất 3 ký tự";
-            //     break;
-            // case "email":
-            //     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-            //         error = "Email không hợp lệ";
-            //     break;
-            // case "phone":
-            //     if (!/^(0|\+84)[0-9]{9,10}$/.test(value))
-            //         error = "Số điện thoại không hợp lệ";
-            //     break;
-            // case "username":
-            //     if (value.trim().length < 6) {
-            //         error = "Tên đăng nhập phải có ít nhất 6 ký tự";
-            //     } else if (!/^[a-zA-Z0-9]+$/.test(value)) {
-            //         error = "Tên đăng nhập chỉ được chứa chữ và số, không dấu, không khoảng trắng";
-            //     } else if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(value)) {
-            //         error = "Tên đăng nhập phải có cả chữ và số";
-            //     }
-            //     break;
             case "password":
-                if (value.length < 6) error = "Mật khẩu phải có ít nhất 6 ký tự";
+                if (value.length < 6) error = "Mật khẩu tối thiểu 6 ký tự";
                 break;
             case "password_confirmation":
                 if (value !== form.password)
-                    error = "Mật khẩu xác nhận không khớp";
+                    error = "Xác nhận mật khẩu không khớp";
                 break;
             default:
                 break;
@@ -79,12 +58,11 @@ export default function RegisterPage() {
         setErrors((prev) => ({ ...prev, [name]: error }));
     };
 
-    // ✅ Kiểm tra trùng dữ liệu
     useEffect(() => {
         const delay = setTimeout(() => {
             ["email", "username", "phone"].forEach(async (field) => {
                 const value = form[field];
-                if (value && !errors[field]) {
+                if (value && !errors[field] && value.trim() !== "") {
                     try {
                         setChecking((prev) => ({ ...prev, [field]: true }));
                         const res = await checkUserExists(field, value);
@@ -93,10 +71,10 @@ export default function RegisterPage() {
                                 ...prev,
                                 [field]:
                                     field === "email"
-                                        ? "Email đã được sử dụng"
+                                        ? "Email đã tồn tại"
                                         : field === "username"
                                             ? "Tên đăng nhập đã tồn tại"
-                                            : "Số điện thoại đã được đăng ký",
+                                            : "Số điện thoại đã tồn tại",
                             }));
                         } else {
                             setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -112,142 +90,134 @@ export default function RegisterPage() {
         return () => clearTimeout(delay);
     }, [form.email, form.username, form.phone]);
 
-    // ✅ Cập nhật form
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm({ ...form, [name]: value });
-        // validate(name, value);
+        if (name === "password" || name === "password_confirmation") {
+            validate(name, value);
+        }
     };
 
-    // ✅ Submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Kiểm tra các trường trống
         const newErrors = {};
         Object.entries(form).forEach(([key, value]) => {
-            if (key !== "roles" && !value.trim()) {
-                newErrors[key] = "Trường này không được để trống";
-            } else {
-                validate(key, value);
+            if (key !== "roles" && (!value || !value.toString().trim())) {
+                newErrors[key] = "Thông tin không được để trống";
             }
         });
 
         setErrors((prev) => ({ ...prev, ...newErrors }));
 
-        const hasError = Object.values({ ...errors, ...newErrors }).some((msg) => msg);
-        if (hasError) {
-            toast.error("Vui lòng kiểm tra lại thông tin");
+        if (Object.values({ ...errors, ...newErrors }).some((msg) => msg)) {
+            toast.error("Vui lòng hoàn thiện thông tin!");
             return;
         }
 
         try {
             setIsSubmitting(true);
             await addUser(form);
-            toast.success("🎉 Đăng ký thành công!");
+            toast.success("Khởi tạo tài khoản thành công!");
             setTimeout(() => router.push("/login"), 800);
         } catch {
-            toast.error("Đăng ký thất bại, vui lòng thử lại");
+            toast.error("Quá trình đăng ký thất bại. Vui lòng thử lại.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    return (
-        <AnimatePresence>
-            {visible && (
-                <motion.div
-                    className="fixed inset-0 flex items-center justify-center bg-zinc-900/60 backdrop-blur-md z-50 p-4 overflow-y-auto"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <motion.div
-                        ref={formRef}
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="relative w-full max-w-[500px] bg-white/90 dark:bg-zinc-950/70 rounded-[2rem] shadow-2xl p-10 border border-[var(--border)] backdrop-blur my-8"
-                    >
-                        <div className="text-center mb-8">
-                            <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-widest uppercase mb-2">
-                                Đăng ký
-                            </h1>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Tạo tài khoản HoangWatch</p>
-                        </div>
+    return visible ? (
+        <div
+            className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xl z-[100] p-4 overflow-y-auto animate-in fade-in duration-500"
+            role="dialog"
+            aria-modal="true"
+        >
+            <div
+                ref={formRef}
+                className="relative w-full max-w-[560px] bg-background border border-border/50 p-10 md:p-14 shadow-2xl my-8 animate-in zoom-in-95 duration-300"
+            >
+                <div className="text-center mb-10 space-y-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 border border-accent/20 text-accent mb-2">
+                         <FontAwesomeIcon icon={faUserPlus} className="text-sm" />
+                    </div>
+                    <h1 className="font-serif text-3xl md:text-4xl text-foreground tracking-wide uppercase">
+                        Đăng ký
+                    </h1>
+                    <p className="text-[10px] text-accent uppercase tracking-[0.4em] font-medium">
+                        Gia nhập WatchShop
+                    </p>
+                </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-                            {[
-                                { label: "Tên", name: "name", type: "text" },
-                                { label: "Email", name: "email", type: "email" },
-                                { label: "Số điện thoại", name: "phone", type: "text" },
-                                { label: "Tên đăng nhập", name: "username", type: "text" },
-                                { label: "Mật khẩu", name: "password", type: "password" },
-                                {
-                                    label: "Xác nhận mật khẩu",
-                                    name: "password_confirmation",
-                                    type: "password",
-                                },
-                            ].map(({ label, name, type }) => (
-                                <div key={name}>
-                                    <label className="block text-zinc-900 dark:text-zinc-100 font-bold text-xs uppercase tracking-widest mb-2">
-                                        {label}
-                                    </label>
-                                    <input
-                                        type={type}
-                                        name={name}
-                                        value={form[name]}
-                                        onChange={handleChange}
-                                        placeholder={`Nhập ${label.toLowerCase()}...`}
-                                        className={`w-full px-5 py-3.5 rounded-xl border text-sm bg-zinc-50 dark:bg-zinc-900/40 focus:bg-white dark:focus:bg-zinc-900/60 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all ${errors[name]
-                                            ? "border-red-400"
-                                            : "border-[var(--border)]"
-                                            }`}
-                                    />
-                                    {checking[name] && (
-                                        <p className="text-xs text-zinc-500 italic mt-2 font-medium">
-                                            Đang kiểm tra...
-                                        </p>
-                                    )}
-                                    {errors[name] && (
-                                        <p className="text-red-500 text-xs font-medium mt-2">{errors[name]}</p>
-                                    )}
-                                </div>
-                            ))}
-
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`w-full py-4 mt-6 rounded-xl font-bold text-white uppercase tracking-widest text-sm transition-all duration-300 ${isSubmitting
-                                    ? "bg-zinc-400 cursor-not-allowed"
-                                    : "bg-zinc-900 hover:bg-black hover:shadow-xl hover:shadow-black/20 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 dark:shadow-none"
-                                    }`}
-                            >
-                                {isSubmitting ? (
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        <span>Đang xử lý...</span>
-                                    </div>
-                                ) : (
-                                    "Đăng ký"
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                        { label: "Họ và tên", name: "name", type: "text" },
+                        { label: "Email", name: "email", type: "email" },
+                        { label: "Số điện thoại", name: "phone", type: "text" },
+                        { label: "Tên đăng nhập", name: "username", type: "text" },
+                        { label: "Mật khẩu", name: "password", type: "password" },
+                        {
+                            label: "Xác nhận mật khẩu",
+                            name: "password_confirmation",
+                            type: "password",
+                        },
+                    ].map(({ label, name, type }) => (
+                        <div key={name} className={name === "name" || name === "email" ? "md:col-span-2 space-y-2" : "space-y-2"}>
+                            <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground ml-1 font-medium">
+                                {label}
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type={type}
+                                    name={name}
+                                    value={form[name]}
+                                    onChange={handleChange}
+                                    className={`w-full bg-slate-50/50 dark:bg-slate-900/5 border-b px-4 py-3 text-sm text-foreground focus:outline-none focus:border-accent transition-colors ${errors[name]
+                                        ? "border-red-400"
+                                        : "border-border/50"
+                                        }`}
+                                />
+                                {checking[name] && (
+                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 border border-t-accent rounded-full animate-spin" />
                                 )}
-                            </button>
-                        </form>
+                            </div>
+                            {errors[name] && (
+                                <p className="text-red-500 text-[9px] uppercase tracking-wider ml-1">{errors[name]}</p>
+                            )}
+                        </div>
+                    ))}
 
-                        <p className="text-center text-zinc-600 dark:text-zinc-300 mt-8 text-sm font-medium border-t border-[var(--border)] pt-6">
-                            Đã có tài khoản?{" "}
-                            <Link
-                                href="/login"
-                                className="text-zinc-900 dark:text-zinc-100 hover:text-black dark:hover:text-white hover:underline font-black uppercase tracking-wider ml-1"
-                            >
-                                Đăng nhập
-                            </Link>
-                        </p>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
+                    <div className="md:col-span-2 pt-6">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full py-5 text-[10px] uppercase tracking-[0.4em] font-medium transition-all duration-300 flex items-center justify-center gap-4 ${isSubmitting
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                : "bg-foreground text-background hover:bg-accent hover:text-white shadow-xl shadow-black/5"
+                                }`}
+                        >
+                            {isSubmitting ? (
+                                <div className="w-3 h-3 border-2 border-slate-400 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <span>Tạo tài khoản</span>
+                            )}
+                        </button>
+                    </div>
+                </form>
+
+                <div className="mt-10 pt-8 border-t border-border/50 text-center space-y-4">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                        Đã có tài khoản thành viên?
+                    </p>
+                    <Link
+                        href="/login"
+                        className="inline-flex items-center gap-3 text-[10px] text-foreground hover:text-accent font-medium uppercase tracking-[0.3em] transition-colors"
+                    >
+                        <span>Đăng nhập ngay</span>
+                        <FontAwesomeIcon icon={faArrowRight} className="text-[9px]" />
+                    </Link>
+                </div>
+            </div>
+        </div>
+    ) : null;
 }

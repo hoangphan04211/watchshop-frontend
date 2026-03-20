@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import { getBannerSlider } from "@/api/apiBanner";
 import { IMAGE_URL } from "@/api/config";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Slider() {
   const [slides, setSlides] = useState([]);
@@ -31,83 +31,92 @@ export default function Slider() {
     if (slides.length === 0) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 8000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
   if (slides.length === 0) {
     return (
-      <div className="h-64 md:h-[500px] flex items-center justify-center">
-        <span>Đang tải banner...</span>
-      </div>
+      <div className="h-[400px] md:h-[700px] bg-slate-50 dark:bg-slate-900/20 animate-pulse" />
     );
   }
 
   return (
-    <section className="relative h-[300px] md:h-[600px] md:rounded-3xl overflow-hidden shadow-2xl border border-[var(--border)] bg-white/30 dark:bg-zinc-950/30">
-      <div className="relative w-full h-full">
-        <AnimatePresence initial={false} mode="wait">
-          <motion.div
-            key={current}
-            className="absolute inset-0"
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <Image
-              src={
-                slides[current].image
-                  ? `${IMAGE_URL}/banners/${slides[current].image}`
-                  : "/images/placeholder.jpg"
-              }
-              alt={slides[current].title}
-              fill
-              style={{ objectFit: "cover" }}
-              priority={current === 0}
-              loading={current === 0 ? "eager" : "lazy"}
-            />
-            {/* Dark overlay for contrast */}
-            <div className="absolute inset-0 bg-black/30" />
+    <section className="relative h-[450px] md:h-[750px] overflow-hidden bg-slate-950">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={
+              slides[current].image
+                ? `${IMAGE_URL}/banners/${slides[current].image}`
+                : "/images/placeholder.jpg"
+            }
+            alt={slides[current].title}
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-slate-950/20 to-transparent" />
 
-            {/* Text overlay */}
-            <div className="absolute bottom-10 left-4 md:bottom-12 md:left-16 bg-white/10 dark:bg-zinc-950/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 md:px-8 py-5 md:py-6 max-w-2xl">
-              <motion.h2
-                key={slides[current].title}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-                className="text-3xl md:text-5xl font-black text-white leading-tight tracking-wide"
+          {/* Text Content */}
+          <div className="absolute inset-0 flex items-center">
+            <div className="container mx-auto px-4 md:px-8">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="max-w-2xl space-y-6"
               >
-                {slides[current].title}
-              </motion.h2>
-
-              {slides[current].desc && (
-                <motion.p
-                  key={slides[current].desc}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                  className="text-zinc-200 text-lg md:text-xl font-light mt-3"
-                >
-                  {slides[current].desc}
-                </motion.p>
-              )}
+                <span className="text-accent text-xs md:text-sm font-medium uppercase tracking-[0.4em] block">
+                  Nghệ thuật chế tác thời gian
+                </span>
+                <h2 className="font-serif text-4xl md:text-7xl text-white leading-[1.1] tracking-wide">
+                  {slides[current].title}
+                </h2>
+                {slides[current].desc && (
+                  <p className="text-slate-300 text-sm md:text-lg font-light tracking-wider max-w-lg leading-relaxed">
+                    {slides[current].desc}
+                  </p>
+                )}
+                <div className="pt-4 flex items-center gap-8">
+                  <a
+                    href={slides[current].link}
+                    className="group relative inline-flex items-center gap-4 text-white text-[11px] uppercase tracking-[0.3em] font-medium"
+                  >
+                    <span>Khám phá ngay</span>
+                    <span className="w-12 h-[1px] bg-white/50 group-hover:w-20 group-hover:bg-accent transition-all duration-500"></span>
+                  </a>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
-      {/* Dots */}
-      <div className="absolute bottom-8 right-6 md:right-16 flex space-x-3 z-10">
+      {/* Progress Indicators */}
+      <div className="absolute bottom-12 left-4 md:left-8 flex gap-4 items-center">
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`h-1.5 transition-all duration-500 rounded-full ${
-              current === index ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/60"
-            }`}
             onClick={() => setCurrent(index)}
-          />
+            className="group py-4 px-1 focus:outline-none"
+          >
+            <div
+              className={`h-[1px] transition-all duration-700 ${
+                current === index ? "w-16 bg-accent" : "w-8 bg-white/30 group-hover:bg-white/60"
+              }`}
+            />
+            <span className={`text-[10px] mt-2 block transition-all tracking-widest ${current === index ? 'text-white opacity-100' : 'text-white/40 opacity-0 group-hover:opacity-100'}`}>
+              0{index + 1}
+            </span>
+          </button>
         ))}
       </div>
     </section>

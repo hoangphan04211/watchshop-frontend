@@ -56,7 +56,6 @@ export default function Header() {
                             className="bg-transparent text-gray-700 placeholder-gray-400 px-4 py-2 w-full outline-none text-sm md:text-base"
                         />
                         <button className="p-3 bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600 text-white transition-all duration-300 rounded-r-full">
-                            <FontAwesomeIcon icon={faSearch} />
                         </button>
                     </div>
                 </div>

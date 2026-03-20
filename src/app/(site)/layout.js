@@ -2,22 +2,23 @@
 
 import "../globals.css";
 import Link from "next/link";
-import { Inter } from "next/font/google";
+import { Inter, Cormorant_Garamond } from "next/font/google";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faShoppingCart,
   faSearch,
+  faBars,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faFacebookF,
   faInstagram,
   faTwitter,
 } from "@fortawesome/free-brands-svg-icons";
-import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "@/api/axios";
 import { usePathname, useRouter } from "next/navigation";
 import { getClientMenu } from "@/api/apiMenu";
@@ -28,7 +29,13 @@ import ThemeToggle from "@/_components/ui/ThemeToggle";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-cormorant",
 });
 
 /* ======================= YÊU CẦU LOGIN ======================= */
@@ -71,16 +78,16 @@ function SearchBar() {
 
   return (
     <form onSubmit={handleSearch} className="relative w-full group">
-      <FontAwesomeIcon
-        icon={faSearch}
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors"
-      />
       <input
         type="text"
+        name="search-watch"
+        id="search-watch-input"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Tìm kiếm sản phẩm..."
-        className="w-full pl-12 pr-12 py-2.5 rounded-full border border-[var(--border)] bg-white/70 dark:bg-zinc-950/40 backdrop-blur-md text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] shadow-sm hover:shadow-md transition-all duration-300"
+        placeholder="Tìm kiếm tuyệt tác..."
+        className="w-full pl-12 pr-12 py-3 border border-border bg-white/70 dark:bg-slate-900/10 backdrop-blur-md text-foreground placeholder-slate-400 focus:outline-none focus:border-accent shadow-sm transition-all duration-300"
+        autoComplete="off"
+        suppressHydrationWarning
       />
     </form>
   );
@@ -92,6 +99,7 @@ function Header() {
   const [cartCount, setCartCount] = useState(0);
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
+  const dropdownRef = useRef(null);
 
   const fetchCart = async () => {
     if (!user) return setCartCount(0);
@@ -115,108 +123,123 @@ function Header() {
     return () => clearInterval(interval);
   }, [user]);
 
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleDocMouseDown = (e) => {
+      const el = dropdownRef.current;
+      if (!el) return;
+      if (el.contains(e.target)) return;
+      setShowMenu(false);
+    };
+    document.addEventListener("mousedown", handleDocMouseDown);
+    return () => document.removeEventListener("mousedown", handleDocMouseDown);
+  }, [showMenu]);
+
   return (
-    <header className="flex justify-between items-center px-4 md:px-8 py-4 bg-white/80 dark:bg-zinc-950/60 backdrop-blur-md border-b border-[var(--border)] shadow-sm sticky top-0 z-50 transition-all duration-300">
-      <Link
-        href="/"
-        className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-widest uppercase hover:opacity-80 transition-opacity duration-300 flex items-center gap-2"
-      >
-        <span className="bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 px-2 py-1 rounded-md text-xl md:text-2xl">
-          H
-        </span>
-        <span>Watch</span>
-      </Link>
+    <header className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-border py-3">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex justify-between items-center h-16 md:h-20">
+          {/* Mobile Menu Trigger */}
+          <div className="md:hidden flex-1">
+            {/* Handled by Navigation but keeping placeholder if needed */}
+          </div>
 
-      <div className="flex-1 flex justify-center max-w-lg mx-6">
-        <SearchBar />
-      </div>
-
-      <div className="flex items-center space-x-3 md:space-x-6 text-xl text-zinc-700 dark:text-zinc-200">
-        {user ? (
-          <div
-            className="relative"
-            onMouseEnter={() => setShowMenu(true)}
-            onMouseLeave={() => setShowMenu(false)}
-          >
-            <div className="flex items-center gap-2 bg-white/70 dark:bg-zinc-900/50 border border-[var(--border)] px-3 py-1.5 rounded-full shadow-sm hover:shadow-md cursor-pointer transition-all">
-              <span className="text-sm text-zinc-800 dark:text-zinc-100 font-medium">
-                {user.name || user.username}
+          {/* Logo - Centered for Luxury feel */}
+          <div className="flex-1 flex justify-center md:justify-start">
+            <Link
+              href="/"
+              className="group flex flex-col items-center md:items-start"
+            >
+              <span className="font-serif text-2xl md:text-3xl font-light tracking-[0.3em] uppercase text-foreground leading-none">
+                Hoang <span className="text-accent">Watch</span>
               </span>
-              <FontAwesomeIcon icon={faUser} className="text-zinc-600 dark:text-zinc-300 text-lg" />
+              <span className="text-[10px] tracking-[0.5em] uppercase text-muted-foreground mt-1 transition-all group-hover:text-accent">
+                Swiss Heritage
+              </span>
+            </Link>
+          </div>
+
+          {/* Right Icons */}
+          <div className="flex-1 flex justify-end items-center space-x-4 md:space-x-8">
+            <div className="hidden lg:block w-64 mr-4">
+              <SearchBar />
             </div>
 
-            <AnimatePresence>
-              {showMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-3 w-56 bg-white/90 dark:bg-zinc-950/80 backdrop-blur-xl rounded-2xl shadow-xl border border-[var(--border)] p-2 z-50"
-                >
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-200 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-white rounded-xl transition-colors"
-                  >
-                    Thông tin cá nhân
-                  </Link>
-                  <Link
-                    href="/orders"
-                    className="block px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-200 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-white rounded-xl transition-colors"
-                  >
-                    Lịch sử đơn hàng
-                  </Link>
-                  <hr className="my-1 border-[var(--border)]" />
+            <div className="flex items-center space-x-5">
+              {user ? (
+                <div className="relative" ref={dropdownRef}>
                   <button
-                    onClick={() => {
-                      logout();
-                      toast.success("Đã đăng xuất!");
-                      setTimeout(() => router.push("/login"), 600);
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-red-600 font-medium hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                    onClick={() => setShowMenu((v) => !v)}
+                    className="flex items-center gap-2 hover:text-accent transition-colors"
                   >
-                    Đăng xuất
+                    <FontAwesomeIcon icon={faUser} className="text-lg" />
+                    <span className="text-xs font-medium hidden sm:block uppercase tracking-wider">
+                      {user.name || user.username}
+                    </span>
                   </button>
-                </motion.div>
+
+                  {showMenu && (
+                    <div className="absolute right-0 mt-4 w-56 bg-white dark:bg-slate-900 shadow-2xl border border-border py-2 z-50">
+                      <Link
+                        href="/profile"
+                        onClick={() => setShowMenu(false)}
+                        className="block px-6 py-3 text-xs font-medium uppercase tracking-widest text-foreground hover:bg-muted hover:text-accent transition-all"
+                      >
+                        Tài khoản
+                      </Link>
+                      <Link
+                        href="/orders"
+                        onClick={() => setShowMenu(false)}
+                        className="block px-6 py-3 text-xs font-medium uppercase tracking-widest text-foreground hover:bg-muted hover:text-accent transition-all"
+                      >
+                        Đơn hàng
+                      </Link>
+                      <div className="border-t border-border my-1"></div>
+                      <button
+                        onClick={() => {
+                          logout();
+                          toast.success("Đã đăng xuất!");
+                          setTimeout(() => router.push("/login"), 600);
+                        }}
+                        className="w-full text-left px-6 py-3 text-xs font-medium uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 hover:text-accent transition-colors"
+                >
+                  <FontAwesomeIcon icon={faUser} className="text-lg" />
+                  <span className="text-xs font-medium hidden sm:block uppercase tracking-wider">
+                    Đăng nhập
+                  </span>
+                </Link>
               )}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <Link
-            href="/login"
-            className="flex items-center gap-2 text-zinc-700 dark:text-zinc-200 hover:text-black dark:hover:text-white transition-colors"
-          >
-            <span className="text-sm font-medium hidden sm:block">Đăng nhập</span>
-            <FontAwesomeIcon
-              icon={faUser}
-              className="text-xl"
-            />
-          </Link>
-        )}
 
-        <RequireLogin onClick={() => router.push("/cart")}>
-          <div className="relative cursor-pointer text-zinc-700 dark:text-zinc-200 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2">
-            <span className="text-sm font-medium hidden sm:block">Giỏ hàng</span>
-            <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
-            {cartCount > 0 && (
-              <motion.span
-                key={cartCount}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 20,
-                }}
-                className="absolute -top-2.5 -right-3 bg-black text-white dark:bg-white dark:text-zinc-950 text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full shadow-lg border-2 border-white dark:border-zinc-950"
-              >
-                {cartCount}
-              </motion.span>
-            )}
-          </div>
-        </RequireLogin>
+              <RequireLogin onClick={() => router.push("/cart")}>
+                <div className="relative group flex items-center gap-2 cursor-pointer hover:text-accent transition-colors">
+                  <div className="relative">
+                    <FontAwesomeIcon icon={faShoppingCart} className="text-lg" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-accent text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
+                        {cartCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium hidden sm:block uppercase tracking-wider">
+                    Giỏ hàng
+                  </span>
+                </div>
+              </RequireLogin>
 
-        <ThemeToggle className="hidden sm:inline-flex" />
+              <ThemeToggle className="hidden sm:flex" />
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   );
@@ -225,6 +248,7 @@ function Header() {
 /* ======================= NAVIGATION ======================= */
 function Navigation() {
   const [menus, setMenus] = useState([]);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     getClientMenu().then((data) => {
@@ -238,26 +262,68 @@ function Navigation() {
   }, []);
 
   return (
-    <nav className="bg-white/70 dark:bg-zinc-950/50 backdrop-blur-lg border-b border-[var(--border)] sticky top-[75px] z-40 hidden md:block">
-      <ul className="container mx-auto flex flex-wrap gap-10 justify-center font-medium text-[15px] py-4 text-zinc-600 dark:text-zinc-300 uppercase tracking-widest">
-        {menus.map((menu, i) => (
-          <motion.li
-            key={menu.id}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
+    <nav className="bg-white dark:bg-slate-950 border-b border-border z-40">
+      <div className="container mx-auto px-4">
+        {/* Desktop Menu */}
+        <div className="hidden md:flex justify-center py-4">
+          <ul className="flex items-center space-x-12">
+            {menus.map((menu) => (
+              <li key={menu.id}>
+                <Link
+                  href={menu.link || "#"}
+                  className="font-serif text-[13px] uppercase tracking-[0.25em] text-foreground/70 hover:text-accent transition-all duration-300 relative group py-2"
+                >
+                  {menu.name}
+                  <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-accent transition-all duration-500 group-hover:w-full"></span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Mobile Nav Button */}
+        <div className="md:hidden flex justify-between items-center py-4">
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="text-foreground hover:text-accent transition-colors"
           >
-            <Link
-              href={menu.link || "#"}
-              prefetch={true}
-              className="relative group cursor-pointer hover:text-black dark:hover:text-white transition-colors"
-            >
-              {menu.name}
-              <span className="absolute left-1/2 -bottom-1 w-0 h-[2px] bg-black dark:bg-white group-hover:w-full group-hover:left-0 transition-all duration-300 ease-out"></span>
-            </Link>
-          </motion.li>
-        ))}
-      </ul>
+            <FontAwesomeIcon icon={mobileOpen ? faTimes : faBars} className="text-xl" />
+          </button>
+
+          <div className="lg:hidden w-1/2">
+            <SearchBar />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Drawer */}
+      <div className={`md:hidden fixed inset-0 bg-white dark:bg-slate-950 z-[60] transition-transform duration-500 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-8">
+          <div className="flex justify-between items-center mb-12">
+            <span className="font-serif text-xl tracking-widest uppercase italic">Menu</span>
+            <button onClick={() => setMobileOpen(false)} className="text-2xl">
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+          </div>
+          <ul className="space-y-8">
+            {menus.map((menu) => (
+              <li key={menu.id}>
+                <Link
+                  href={menu.link || "#"}
+                  onClick={() => setMobileOpen(false)}
+                  className="font-serif text-2xl uppercase tracking-widest text-foreground hover:text-accent transition-all block border-b border-border/50 pb-4"
+                >
+                  {menu.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-16 flex justify-center space-x-6">
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
     </nav>
   );
 }
@@ -277,98 +343,78 @@ function Footer() {
       .catch(console.error);
   }, []);
 
-  // Lấy 3 nhóm footer theo ID cha trong MenuSeeder (6,7,8)
   const footerGroups = menus.filter((m) => [6, 7, 8].includes(m.id));
 
   return (
-    <footer className="bg-zinc-950 text-zinc-400 mt-auto border-t border-zinc-900">
-      <div className="container mx-auto px-10 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 border-b border-zinc-900 pb-12">
-          {/* 3 nhóm menu footer */}
+    <footer className="bg-slate-950 text-slate-400 pt-24 pb-12 overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent"></div>
+
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-20">
+          {/* Brand Column */}
+          <div className="space-y-8">
+            <Link href="/" className="inline-block">
+              <span className="font-serif text-3xl font-light tracking-[0.3em] uppercase text-white leading-none">
+                HOANG <span className="text-accent">WATCH</span>
+              </span>
+            </Link>
+            <p className="text-sm leading-relaxed max-w-xs font-light tracking-wide">
+              Trải nghiệm di sản đồng hồ Thụy Sĩ sang trọng. Chúng tôi mang đến những tuyệt tác thời gian từ những thương hiệu danh tiếng nhất thế giới.
+            </p>
+            <div className="flex space-x-6">
+              <a href="#" className="hover:text-accent transition-colors"><FontAwesomeIcon icon={faFacebookF} /></a>
+              <a href="#" className="hover:text-accent transition-colors"><FontAwesomeIcon icon={faInstagram} /></a>
+              <a href="#" className="hover:text-accent transition-colors"><FontAwesomeIcon icon={faTwitter} /></a>
+            </div>
+          </div>
+
+          {/* Dynamic Menus */}
           {footerGroups.map((group) => (
-            <div key={group.id}>
-              <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">
+            <div key={group.id} className="space-y-8">
+              <h3 className="font-serif text-sm uppercase tracking-[0.3em] text-white">
                 {group.name}
               </h3>
-              <ul className="space-y-3 text-sm">
-                {group.children?.map((item) => {
-                  // Nếu link dạng "/posts/slug", tách slug
-                  const slug = item.link?.startsWith("/posts/") ? item.link.split("/").pop() : null;
-
-                  return (
-                    <li key={item.id}>
-                      <Link
-                        href={item.link || "#"}
-                        onClick={async (e) => {
-                          if (slug) {
-                            e.preventDefault();
-                            try {
-                              const data = await getClientPostBySlug(slug);
-                              console.log("Chi tiết bài viết:", data);
-                              // Chuyển trang sau khi fetch xong
-                              router.push(item.link);
-                            } catch (err) {
-                              console.error(err);
-                              toast.error("Không thể tải bài viết");
-                            }
-                          }
-                        }}
-                        className="hover:text-white transition duration-300"
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  );
-                })}
+              <ul className="space-y-4 font-light text-sm tracking-wide">
+                {group.children?.map((item) => (
+                  <li key={item.id}>
+                    <Link href={item.link || "#"} className="hover:text-accent transition-all flex items-center group">
+                      <span className="w-0 h-[1px] bg-accent mr-0 transition-all group-hover:w-4 group-hover:mr-2"></span>
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
 
-          {/* Cột Liên hệ */}
-          <div>
-            <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">
-              Liên hệ
+          {/* Contact Column */}
+          <div className="space-y-8">
+            <h3 className="font-serif text-sm uppercase tracking-[0.3em] text-white">
+              Thông tin liên hệ
             </h3>
-            <p className="text-sm leading-loose">
-              {setting?.address || "123 Đường Đồng Hồ, TP.HCM"}
-              <br />
-              {setting?.phone || "0123 456 789"}
-              <br />
-              {setting?.email || "support@donghoshop.com"}
-            </p>
-            <div className="flex space-x-5 text-lg mt-6">
-              <a
-                href={setting?.facebook || "#"}
-                className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-all duration-300"
-                aria-label="Facebook"
-              >
-                <FontAwesomeIcon icon={faFacebookF} />
-              </a>
-              <a
-                href={setting?.instagram || "#"}
-                className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-all duration-300"
-                aria-label="Instagram"
-              >
-                <FontAwesomeIcon icon={faInstagram} />
-              </a>
-              <a
-                href={setting?.twitter || "#"}
-                className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-all duration-300"
-                aria-label="Twitter"
-              >
-                <FontAwesomeIcon icon={faTwitter} />
-              </a>
-            </div>
+            <ul className="space-y-4 font-light text-sm tracking-wide">
+              <li className="flex items-start gap-3">
+                <span className="text-accent shrink-0">Địa chỉ:</span>
+                <span>{setting?.address || "123 Đường Đồng Hồ, TP.HCM"}</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="text-accent shrink-0">Hotline:</span>
+                <a href={`tel:${setting?.phone}`} className="hover:text-white transition-colors">{setting?.phone || "0123 456 789"}</a>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="text-accent shrink-0">Email:</span>
+                <a href={`mailto:${setting?.email}`} className="hover:text-white transition-colors">{setting?.email || "support@hoangwatch.com"}</a>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center mt-10">
-          <p className="text-xs text-zinc-500 uppercase tracking-widest">
-            © 2025 {setting?.site_name || "HOANGWATCH"}. All rights reserved.
-          </p>
-          <div className="text-2xl font-black text-white tracking-widest uppercase mt-4 md:mt-0 flex gap-1">
-            <span className="bg-white text-zinc-950 px-1 rounded-sm flex items-center justify-center">H</span>
-            <span>WATCH</span>
+        {/* Bottom Bar */}
+        <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] uppercase tracking-[0.2em] font-medium text-slate-500">
+          <p>© 2025 {setting?.site_name || "HOANG WATCH"}. Crafted for Elegance.</p>
+          <div className="flex space-x-8">
+            <a href="#" className="hover:text-white transition-colors">Chính sách bảo mật</a>
+            <a href="#" className="hover:text-white transition-colors">Điều khoản dịch vụ</a>
           </div>
         </div>
       </div>
@@ -386,31 +432,36 @@ export default function SiteLayout({ children }) {
     "/products",
     "/posts",
     "/contact",
+    "/about",
     "/",
   ];
-  const isPublic = publicPages.includes(pathname);
+  const isPublic = publicPages.includes(pathname) || pathname.startsWith("/products/");
 
   return (
-    <html lang="vi" className={inter.className}>
-      <body className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col font-sans selection:bg-zinc-200 dark:selection:bg-zinc-800">
+    <html lang="vi" className={`${inter.variable} ${cormorant.variable}`}>
+      <body className="bg-background text-foreground min-h-screen flex flex-col font-sans selection:bg-accent/30 selection:text-foreground">
         <ThemeProvider>
           <AuthProvider>
             <Toaster
               position="top-center"
               toastOptions={{
-                style: { background: "#18181b", color: "#fff", borderRadius: "12px" },
+                style: {
+                  background: "#1e293b",
+                  color: "#fff",
+                  borderRadius: "0px",
+                  fontSize: "12px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em"
+                },
               }}
             />
-            <Header />
-            <Navigation />
-            <motion.main
-              className="container mx-auto flex-grow px-4 md:px-8 py-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
+            <div className="sticky top-0 z-[100] shadow-sm">
+              <Header />
+              <Navigation />
+            </div>
+            <main className="flex-grow">
               {isPublic ? children : <RequireLogin>{children}</RequireLogin>}
-            </motion.main>
+            </main>
             <Footer />
           </AuthProvider>
         </ThemeProvider>

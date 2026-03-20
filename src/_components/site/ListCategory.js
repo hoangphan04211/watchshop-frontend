@@ -26,15 +26,23 @@ export default function CategoryCarousel() {
     }, []);
 
     if (loading) {
-        return <p className="text-center">Đang tải danh mục...</p>;
+        return (
+            <div className="container mx-auto px-4 mt-20 md:mt-32">
+                <div className="h-40 bg-slate-50 dark:bg-slate-900/20 animate-pulse" />
+            </div>
+        );
     }
 
     return (
-        <section className="container mx-auto px-4 mt-24">
-            <div className="flex justify-between items-end mb-10 border-b border-[var(--border)] pb-4">
-                <h3 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
-                    Danh mục nổi bật
-                </h3>
+        <section className="container mx-auto px-4 mt-24 md:mt-32">
+            <div className="text-center mb-16 space-y-4">
+                <span className="text-accent text-[10px] md:text-xs font-medium uppercase tracking-[0.4em]">
+                    Bộ sưu tập của chúng tôi
+                </span>
+                <h2 className="font-serif text-3xl md:text-5xl text-foreground tracking-wide">
+                    Khám phá Tuyệt tác
+                </h2>
+                <div className="w-20 h-[1px] bg-accent/30 mx-auto mt-6"></div>
             </div>
 
             <Swiper
@@ -44,33 +52,40 @@ export default function CategoryCarousel() {
                     640: { slidesPerView: 3 },
                     768: { slidesPerView: 4 },
                     1024: { slidesPerView: 5 },
+                    1280: { slidesPerView: 6 },
                 }}
-                spaceBetween={20}
+                spaceBetween={40}
                 loop={true}
-                speed={3000}
+                speed={4000}
                 autoplay={{
                     delay: 0,
                     disableOnInteraction: false,
-                    reverseDirection: true,
                 }}
-                className="w-full !py-4"
+                className="w-full"
             >
                 {categories.map((cat, index) => (
-                    <SwiperSlide key={index}>
-                        <Link href={`/products?category=${cat.id}`} className="group flex flex-col items-center">
-                            <div className="w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden mb-4 border border-[var(--border)] shadow-md transform transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl relative bg-white/90 dark:bg-zinc-950/40">
+                    <SwiperSlide key={index} className="pb-8">
+                        <Link 
+                            href={`/products?category=${cat.id}`} 
+                            className="group flex flex-col items-center gap-6"
+                        >
+                            <div className="relative w-full aspect-square rounded-full overflow-hidden border border-border/50 bg-slate-50 dark:bg-slate-900/10 transition-all duration-700 group-hover:border-accent group-hover:shadow-2xl group-hover:shadow-accent/10">
                                 <Image
                                     src={cat.image ? `${IMAGE_URL}/categories/${cat.image}` : "/images/placeholder.jpg"}
                                     alt={cat.name}
-                                    width={200}
-                                    height={200}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    fill
+                                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                                <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/20 transition-colors duration-500" />
                             </div>
-                            <p className="text-zinc-800 dark:text-zinc-100 text-lg font-semibold text-center uppercase tracking-widest text-sm transition-colors group-hover:text-black dark:group-hover:text-white">
-                                {cat.name}
-                            </p>
+                            <div className="text-center">
+                                <p className="font-serif text-base md:text-lg text-foreground hover:text-accent transition-colors duration-300 tracking-wide">
+                                    {cat.name}
+                                </p>
+                                <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-2 block opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                    Xem ngay
+                                </span>
+                            </div>
                         </Link>
                     </SwiperSlide>
                 ))}

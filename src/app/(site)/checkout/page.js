@@ -7,6 +7,9 @@ import { toast } from "react-hot-toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { IMAGE_URL } from "@/api/config";
+import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShieldHalved, faTruckFast, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
 export default function CheckoutForm() {
   const { checkout } = useCheckoutApi();
@@ -51,7 +54,7 @@ export default function CheckoutForm() {
   }, []);
 
   const formatCurrency = (num) =>
-    num.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+    num.toLocaleString("vi-VN") + "₫";
 
   const total = cartDetails.reduce(
     (sum, item) => sum + (item.price_sale || item.price) * item.qty,
@@ -72,7 +75,10 @@ export default function CheckoutForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error("Vui lòng kiểm tra lại thông tin.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -86,137 +92,210 @@ export default function CheckoutForm() {
     }
   };
 
-  if (loading) return <div className="p-4 text-center">Vui lòng chờ...</div>;
-  if (cartDetails.length === 0) return <div className="p-4 text-center">Giỏ hàng trống</div>;
+  if (loading) return (
+    <div className="container mx-auto px-4 py-32 flex flex-col items-center justify-center space-y-6">
+      <div className="w-10 h-10 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">Đang chuẩn bị trang thanh toán...</p>
+    </div>
+  );
+
+  if (cartDetails.length === 0) return (
+    <div className="container mx-auto px-4 py-32 text-center space-y-8">
+      <h2 className="font-serif text-3xl md:text-5xl text-foreground tracking-wide">Giỏ hàng trống</h2>
+      <Link href="/products" className="inline-flex items-center gap-4 text-[11px] uppercase tracking-[0.4em] font-medium text-foreground hover:text-accent transition-colors">
+        <span>Quay lại bộ sưu tập</span>
+      </Link>
+    </div>
+  );
 
   return (
-    <div className="max-w-6xl mx-auto mt-12 mb-24 px-4">
-      <div className="text-center mb-12">
-          <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">Thủ Tục Thanh Toán</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 mt-2 font-medium tracking-wide">Vui lòng điền thông tin giao hàng</p>
+    <div className="container mx-auto px-4 py-16 md:py-24 max-w-6xl">
+      <div className="mb-20 text-center md:text-left space-y-3">
+          <span className="text-accent text-xs font-medium uppercase tracking-[0.4em]">Hoàn tất tuyệt tác</span>
+          <h1 className="font-serif text-4xl md:text-6xl text-foreground tracking-wide capitalize">Thanh toán</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10">
-        {/* Left side: Info */}
-        <div className="flex-[1.2] flex flex-col gap-6">
-          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-widest mb-2 border-b border-[var(--border)] pb-4">Thông Tin Vận Chuyển</h3>
+      <form onSubmit={handleSubmit} className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+        {/* Shipping Info */}
+        <div className="lg:col-span-7 space-y-16">
+          <div className="space-y-10">
+            <h3 className="text-[11px] uppercase tracking-[0.4em] font-medium text-foreground border-b border-border/50 pb-6 ml-1">Thông tin vận chuyển</h3>
+            
+            <div className="space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/** Họ tên */}
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground ml-1 font-medium">Họ và tên</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => {
+                      setForm({ ...form, name: e.target.value });
+                      if(errors.name) setErrors({...errors, name: ""});
+                    }}
+                    className={`w-full bg-slate-50/50 dark:bg-slate-900/5 border-b px-4 py-3 text-foreground focus:outline-none focus:border-accent transition-colors ${
+                      errors.name ? "border-red-500/50" : "border-border/50"
+                    }`}
+                  />
+                  {errors.name && <p className="text-red-500 text-[9px] uppercase tracking-wider ml-1">{errors.name}</p>}
+                </div>
+
+                {/** Phone */}
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground ml-1 font-medium">Số điện thoại</label>
+                  <input
+                    type="text"
+                    value={form.phone}
+                    onChange={(e) => {
+                      setForm({ ...form, phone: e.target.value });
+                      if(errors.phone) setErrors({...errors, phone: ""});
+                    }}
+                    className={`w-full bg-slate-50/50 dark:bg-slate-900/5 border-b px-4 py-3 text-foreground focus:outline-none focus:border-accent transition-colors ${
+                      errors.phone ? "border-red-500/50" : "border-border/50"
+                    }`}
+                  />
+                  {errors.phone && <p className="text-red-500 text-[9px] uppercase tracking-wider ml-1">{errors.phone}</p>}
+                </div>
+              </div>
+
+              {/** Email */}
+              <div className="space-y-3">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground ml-1 font-medium">Địa chỉ thư điện tử</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => {
+                    setForm({ ...form, email: e.target.value });
+                    if(errors.email) setErrors({...errors, email: ""});
+                  }}
+                  className={`w-full bg-slate-50/50 dark:bg-slate-900/5 border-b px-4 py-3 text-foreground focus:outline-none focus:border-accent transition-colors ${
+                    errors.email ? "border-red-500/50" : "border-border/50"
+                  }`}
+                />
+                {errors.email && <p className="text-red-500 text-[9px] uppercase tracking-wider ml-1">{errors.email}</p>}
+              </div>
+
+              {/** Address */}
+              <div className="space-y-3">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground ml-1 font-medium">Địa chỉ nhận hàng</label>
+                <input
+                  type="text"
+                  value={form.address}
+                  onChange={(e) => {
+                    setForm({ ...form, address: e.target.value });
+                    if(errors.address) setErrors({...errors, address: ""});
+                  }}
+                  className={`w-full bg-slate-50/50 dark:bg-slate-900/5 border-b px-4 py-3 text-foreground focus:outline-none focus:border-accent transition-colors ${
+                    errors.address ? "border-red-500/50" : "border-border/50"
+                  }`}
+                />
+                {errors.address && <p className="text-red-500 text-[9px] uppercase tracking-wider ml-1">{errors.address}</p>}
+              </div>
+
+              {/** Note */}
+              <div className="space-y-3">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground ml-1 font-medium">Ghi chú (tùy chọn)</label>
+                <textarea
+                  value={form.note}
+                  onChange={(e) => setForm({ ...form, note: e.target.value })}
+                  className="w-full bg-slate-50/50 dark:bg-slate-900/5 border border-border/50 px-4 py-4 text-foreground focus:outline-none focus:border-accent transition-colors min-h-[120px] resize-none"
+                />
+              </div>
+            </div>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/** Họ tên */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Họ tên"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className={`w-full p-4 rounded-xl border ${errors.name ? "border-red-500" : "border-[var(--border)]"} bg-zinc-50 dark:bg-zinc-900/40 text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900/60 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all`}
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1 absolute -bottom-4">{errors.name}</p>}
-            </div>
-
-            {/** Phone */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Số điện thoại"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className={`w-full p-4 rounded-xl border ${errors.phone ? "border-red-500" : "border-[var(--border)]"} bg-zinc-50 dark:bg-zinc-900/40 text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900/60 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all`}
-              />
-              {errors.phone && <p className="text-red-500 text-xs mt-1 absolute -bottom-4">{errors.phone}</p>}
-            </div>
-          </div>
-
-          {/** Email */}
-          <div className="relative">
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className={`w-full p-4 rounded-xl border ${errors.email ? "border-red-500" : "border-[var(--border)]"} bg-zinc-50 dark:bg-zinc-900/40 text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900/60 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all`}
-            />
-            {errors.email && <p className="text-red-500 text-xs mt-1 absolute -bottom-4">{errors.email}</p>}
-          </div>
-
-          {/** Address */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Địa chỉ nhận hàng (Ví dụ: Số nhà, Tên đường, Phường/Xã...)"
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              className={`w-full p-4 rounded-xl border ${errors.address ? "border-red-500" : "border-[var(--border)]"} bg-zinc-50 dark:bg-zinc-900/40 text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900/60 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all`}
-            />
-            {errors.address && <p className="text-red-500 text-xs mt-1 absolute -bottom-4">{errors.address}</p>}
-          </div>
-
-          {/** Note */}
-          <div>
-            <textarea
-              placeholder="Ghi chú thêm cho đơn hàng (tuỳ chọn)"
-              value={form.note}
-              onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className="w-full p-4 rounded-xl border border-[var(--border)] bg-zinc-50 dark:bg-zinc-900/40 text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900/60 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all min-h-[120px]"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-border/50 pt-16">
+             <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 border border-accent/20 flex items-center justify-center shrink-0 group-hover:border-accent transition-colors">
+                   <FontAwesomeIcon icon={faShieldHalved} className="text-accent/50 text-xs" />
+                </div>
+                <div className="space-y-2">
+                   <h4 className="text-[10px] uppercase tracking-widest font-medium">Dịch vụ bảo mật</h4>
+                   <p className="text-[9px] text-muted-foreground uppercase tracking-widest leading-relaxed">Mọi giao dịch đều được mã hóa tuyệt đối.</p>
+                </div>
+             </div>
+             <div className="flex gap-4 items-start group">
+                <div className="w-10 h-10 border border-accent/20 flex items-center justify-center shrink-0 group-hover:border-accent transition-colors">
+                   <FontAwesomeIcon icon={faTruckFast} className="text-accent/50 text-xs" />
+                </div>
+                <div className="space-y-2">
+                   <h4 className="text-[10px] uppercase tracking-widest font-medium">Đặc quyền vận chuyển</h4>
+                   <p className="text-[9px] text-muted-foreground uppercase tracking-widest leading-relaxed">Giao hàng hỏa tốc trong vòng 24 giờ.</p>
+                </div>
+             </div>
           </div>
         </div>
 
-        {/* Right side: Cart */}
-        <div className="flex-[0.8] lg:flex-1 bg-white/90 dark:bg-zinc-950/40 border border-[var(--border)] shadow-xl shadow-zinc-200/40 dark:shadow-none rounded-3xl p-8 flex flex-col h-fit lg:sticky lg:top-24">
-          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-100 mb-6 uppercase tracking-widest border-b border-[var(--border)] pb-4">Tóm Tắt Đơn Hàng</h3>
-          
-          <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-            {cartDetails.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 py-3 border-b border-[var(--border)] last:border-0">
-                <div className="w-16 h-16 relative rounded-xl border border-zinc-100 overflow-hidden bg-zinc-50 shrink-0">
-                  <Image
-                    src={item.product.image ? `${IMAGE_URL}/products/${item.product.image}` : "/images/default.jpg"}
-                    alt={item.product.name || "Sản phẩm"}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute -top-1 -right-1 bg-zinc-900 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold z-10 border-2 border-white">
-                    {item.qty}
+        {/* Order Summary */}
+        <div className="lg:col-span-5 lg:sticky lg:top-32">
+          <div className="p-8 md:p-10 border border-border bg-slate-50/50 dark:bg-slate-900/10 space-y-10">
+            <h3 className="font-serif text-xl md:text-2xl text-foreground border-b border-border pb-6">Đơn hàng của quý khách</h3>
+            
+            <div className="space-y-8 max-h-[350px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-accent/20">
+              {cartDetails.map((item) => (
+                <div key={item.id} className="flex gap-6 items-center">
+                  <div className="relative w-16 h-16 bg-white dark:bg-slate-900 border border-border/50 shrink-0">
+                    <Image
+                      src={item.product.image ? `${IMAGE_URL}/products/${item.product.image}` : "/images/placeholder.jpg"}
+                      alt={item.product.name}
+                      fill
+                      className="object-contain p-2"
+                    />
+                    <div className="absolute -top-2 -right-2 bg-foreground text-background w-5 h-5 flex items-center justify-center text-[9px] font-medium border border-border/50">
+                      {item.qty}
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-[11px] text-foreground uppercase tracking-tight line-clamp-1">{item.product.name}</p>
+                    {item.attributes && Object.keys(item.attributes).length > 0 && (
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-[0.1em]">
+                        {Object.entries(item.attributes).map(([key, value]) => `${value}`).join(" / ")}
+                      </p>
+                    )}
+                    <p className="text-[11px] font-serif text-accent">
+                       {formatCurrency((item.price_sale || item.price) * item.qty)}
+                    </p>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-bold text-zinc-900 dark:text-zinc-100 text-sm line-clamp-2 uppercase tracking-wide">{item.product.name}</p>
-                  {item.attributes && Object.keys(item.attributes).length > 0 && (
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1">
-                      {Object.entries(item.attributes).map(([key, value]) => `${value}`).join(" / ")}
-                    </div>
-                  )}
-                </div>
-                <div className="font-bold text-zinc-900 dark:text-zinc-100 shrink-0">
-                   {formatCurrency((item.price_sale || item.price) * item.qty)}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="border-t border-[var(--border)] mt-6 pt-6 space-y-4">
-             <div className="flex justify-between text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-widest text-sm">
-                <span>Tạm tính</span>
-                <span className="text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
-             </div>
-             <div className="flex justify-between text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-widest text-sm">
-                <span>Phí giao hàng</span>
-                <span className="text-zinc-900 dark:text-zinc-100">Miễn phí</span>
-             </div>
-             <div className="flex justify-between items-end border-t border-[var(--border)] pt-4 mt-4">
-                <span className="text-zinc-900 dark:text-zinc-100 font-black uppercase tracking-widest">Tổng Thanh Toán</span>
-                <span className="text-2xl font-black text-zinc-900 dark:text-zinc-100">{formatCurrency(total)}</span>
-             </div>
-          </div>
+            <div className="space-y-4 pt-4 border-t border-border">
+               <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <span>Tạm tính</span>
+                  <span className="text-foreground">{formatCurrency(total)}</span>
+               </div>
+               <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <span>Vận chuyển</span>
+                  <span className="text-accent italic font-light">Đặc quyền miễn phí</span>
+               </div>
+               <div className="flex justify-between items-baseline pt-6 border-t border-border">
+                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-foreground">Tổng cộng</span>
+                  <span className="font-serif text-3xl text-foreground tracking-tight">{formatCurrency(total)}</span>
+               </div>
+            </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full mt-8 bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 text-white py-4 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg shadow-black/20 dark:shadow-none"
-          >
-            {submitting ? "Đang xử lý..." : "Đặt Hàng Ngay"}
-          </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className={`w-full py-5 text-[10px] uppercase tracking-[0.4em] font-medium transition-all duration-300 flex items-center justify-center gap-4 ${
+                submitting 
+                  ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                  : "bg-foreground text-background hover:bg-accent hover:text-white"
+              }`}
+            >
+              {submitting ? (
+                <div className="w-3 h-3 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
+              ) : (
+                <FontAwesomeIcon icon={faCircleCheck} className="text-[10px]" />
+              )}
+              {submitting ? "Đang xử lý..." : "Xác nhận đơn hàng"}
+            </button>
+            
+            <p className="text-[9px] text-center text-muted-foreground uppercase tracking-widest leading-loose font-light">
+              Hoàn tất thanh toán đồng nghĩa với việc quý khách chấp thuận <Link href="/conditions" className="text-accent hover:underline underline-offset-4">điều khoản bảo mật</Link> của WatchShop.
+            </p>
+          </div>
         </div>
       </form>
     </div>
