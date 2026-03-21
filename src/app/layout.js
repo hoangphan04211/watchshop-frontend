@@ -1,8 +1,8 @@
 // src/app/layout.js
 export const metadata = {
   title: {
-    default: 'WATCHSHOP - Cửa hàng đồng hồ chính hãng',
-    template: '%s | WATCHSHOP',
+    default: 'HOANG WATCH',
+    template: '%s | HOANGWATCH',
   },
   description: 'Website cá nhân Next.js',
   icons: {
